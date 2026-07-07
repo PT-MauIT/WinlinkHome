@@ -3,9 +3,6 @@ services:
     build: .
     #ports:
     #  - "3001:3001"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.linkboard.loadbalancer.server.port=3001"
     environment:
       APP_PASSWORD: ${APP_PASSWORD:-changeme}
       SESSION_SECRET: ${SESSION_SECRET:?define SESSION_SECRET en tu .env}
