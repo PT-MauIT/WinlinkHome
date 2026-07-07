@@ -1,8 +1,8 @@
 services:
   linkboard:
     build: .
-    ports:
-      - "3001:3001"
+    #ports:
+    #  - "3001:3001"
     environment:
       APP_PASSWORD: ${APP_PASSWORD:-changeme}
       SESSION_SECRET: ${SESSION_SECRET:?define SESSION_SECRET en tu .env}
