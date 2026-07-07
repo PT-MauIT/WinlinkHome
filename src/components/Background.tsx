@@ -1,5 +1,29 @@
-/** Ambient dark backdrop with layered mountain ridges and a faint pine texture. */
+import { useStore } from '../store/useStore'
+
+/** Ambient dark backdrop: a chosen photo when set, otherwise the default
+ *  layered mountain scene. A dark scrim keeps foreground text legible. */
 export function Background() {
+  const background = useStore((s) => s.background)
+  const image = background.source !== 'default' ? background.url : null
+
+  if (image) {
+    return (
+      <div className="fixed inset-0 -z-10 overflow-hidden bg-[#0f1115]">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url("${image}")` }}
+        />
+        {/* legibility scrim: darker at top & bottom where content sits */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0c0e13]/85 via-[#0c0e13]/55 to-[#0c0e13]/90" />
+        {background.credit && (
+          <span className="absolute bottom-2 left-3 text-[10px] tracking-wide text-white/40">
+            {background.credit}
+          </span>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden bg-[#0f1115]">
       {/* vertical ambient gradient */}

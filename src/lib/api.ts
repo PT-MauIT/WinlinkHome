@@ -1,4 +1,4 @@
-import type { Category, LinkItem, PaletteKey } from '../types'
+import type { Background, Category, LinkItem, PaletteKey, UnsplashPhoto } from '../types'
 
 const BASE = '/api'
 
@@ -39,11 +39,50 @@ export const api = {
   logout: () => req<{ ok: true }>('/logout', { method: 'POST' }),
 
   getState: () =>
-    req<{ userName: string; categories: Category[]; links: LinkItem[] }>('/state'),
+    req<{ userName: string; categories: Category[]; links: LinkItem[]; background: Background }>(
+      '/state',
+    ),
   setName: (name: string) =>
     req<{ userName: string }>('/settings/name', {
       method: 'PUT',
       body: JSON.stringify({ name }),
+    }),
+
+  setBackground: (data: Background) =>
+    req<Background>('/settings/background', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  // raw binary upload — bypasses the JSON body parser & base64 overhead
+  uploadBackground: async (file: File): Promise<{ url: string }> => {
+    const res = await fetch(`${BASE}/uploads/background?type=${encodeURIComponent(file.type)}`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/octet-stream' },
+      body: file,
+    })
+    if (!res.ok) {
+      let message = `Error ${res.status}`
+      try {
+        const data = await res.json()
+        if (data?.error) message = data.error
+      } catch {
+        /* ignore */
+      }
+      throw new ApiError(message, res.status)
+    }
+    return (await res.json()) as { url: string }
+  },
+
+  searchUnsplash: (query: string, page = 1) =>
+    req<{ results: UnsplashPhoto[] }>(
+      `/unsplash/search?query=${encodeURIComponent(query)}&page=${page}`,
+    ),
+  trackUnsplash: (downloadLocation: string | null) =>
+    req<{ ok: true }>('/unsplash/track', {
+      method: 'POST',
+      body: JSON.stringify({ downloadLocation }),
     }),
 
   addLink: (data: LinkInput) =>

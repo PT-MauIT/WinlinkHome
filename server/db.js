@@ -58,6 +58,24 @@ const toLink = (r) => ({
   createdAt: r.created_at,
 })
 
+const DEFAULT_BACKGROUND = { source: 'default', url: null, credit: null }
+
+export function getBackground() {
+  const raw = getSetting('background')
+  if (!raw) return DEFAULT_BACKGROUND
+  try {
+    return { ...DEFAULT_BACKGROUND, ...JSON.parse(raw) }
+  } catch {
+    return DEFAULT_BACKGROUND
+  }
+}
+
+export function setBackground({ source, url = null, credit = null }) {
+  const value = { source, url, credit }
+  setSetting('background', JSON.stringify(value))
+  return value
+}
+
 export function getState() {
   const categories = db
     .prepare('SELECT id, name, color FROM categories ORDER BY position, rowid')
@@ -70,6 +88,7 @@ export function getState() {
     userName: getSetting('userName', 'amigo'),
     categories,
     links,
+    background: getBackground(),
   }
 }
 

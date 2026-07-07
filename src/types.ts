@@ -21,3 +21,19 @@ export interface LinkItem {
   categoryId: string | null
   createdAt: number
 }
+
+export type BackgroundSource = 'default' | 'unsplash' | 'admin' | 'collaborator'
+
+export interface Background {
+  source: BackgroundSource
+  url: string | null
+  credit: string | null
+}
+
+export interface UnsplashPhoto {
+  id: string
+  thumb: string
+  full: string
+  credit: string
+  downloadLocation: string | null
+}
