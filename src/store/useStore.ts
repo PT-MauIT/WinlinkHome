@@ -1,6 +1,8 @@
 import { create } from 'zustand'
-import type { Category, LinkItem, PaletteKey } from '../types'
+import type { Background, Category, LinkItem, PaletteKey } from '../types'
 import { api } from '../lib/api'
+
+const DEFAULT_BACKGROUND: Background = { source: 'default', url: null, credit: null }
 
 type LinkInput = { title: string; url: string; categoryId: string | null }
 type CategoryInput = { name: string; color: PaletteKey }
@@ -12,11 +14,13 @@ interface Store {
   activeCategoryId: string | null
   query: string
   loaded: boolean
+  background: Background
 
   load: () => Promise<void>
   setUserName: (name: string) => void
   setActiveCategory: (id: string | null) => void
   setQuery: (q: string) => void
+  setBackground: (data: Background) => Promise<void>
 
   addLink: (data: LinkInput) => Promise<void>
   updateLink: (id: string, data: Partial<LinkInput>) => Promise<void>
@@ -34,6 +38,7 @@ export const useStore = create<Store>((set, get) => ({
   activeCategoryId: null,
   query: '',
   loaded: false,
+  background: DEFAULT_BACKGROUND,
 
   load: async () => {
     const state = await api.getState()
@@ -41,12 +46,26 @@ export const useStore = create<Store>((set, get) => ({
       userName: state.userName,
       categories: state.categories,
       links: state.links,
+      background: state.background ?? DEFAULT_BACKGROUND,
       loaded: true,
     })
   },
 
   setActiveCategory: (id) => set({ activeCategoryId: id }),
   setQuery: (q) => set({ query: q }),
+
+  // optimistic — the picker feels instant; revert to server truth on failure
+  setBackground: async (data) => {
+    const prev = get().background
+    set({ background: data })
+    try {
+      const saved = await api.setBackground(data)
+      set({ background: saved })
+    } catch (e) {
+      console.error(e)
+      set({ background: prev })
+    }
+  },
 
   setUserName: (name) => {
     const clean = name.trim() || 'amigo'

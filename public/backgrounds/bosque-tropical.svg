@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="forest" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f3a2e"/>
+      <stop offset="0.55" stop-color="#1c5b3f"/>
+      <stop offset="1" stop-color="#0a2a20"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.25" r="0.6">
+      <stop offset="0" stop-color="#7fd39a" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#7fd39a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#forest)"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <path d="M0,620 L220,540 L440,610 L660,520 L880,605 L1100,515 L1320,600 L1600,530 L1600,900 L0,900 Z" fill="#0c3226" opacity="0.7"/>
+  <path d="M0,720 L260,660 L520,715 L780,650 L1040,712 L1300,655 L1600,705 L1600,900 L0,900 Z" fill="#07211a" opacity="0.85"/>
+</svg>

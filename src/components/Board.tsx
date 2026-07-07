@@ -8,6 +8,7 @@ import { LinkGrid } from './LinkGrid'
 import { Footer } from './Footer'
 import { LinkFormModal } from './modals/LinkFormModal'
 import { CategoryFormModal } from './modals/CategoryFormModal'
+import { SettingsFab } from './SettingsFab'
 
 export function Board() {
   const load = useStore((s) => s.load)
@@ -37,6 +38,7 @@ export function Board() {
 
       <LinkFormModal />
       <CategoryFormModal />
+      <SettingsFab />
     </>
   )
 }
