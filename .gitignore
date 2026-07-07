@@ -14,7 +14,7 @@ dist-ssr
 
 # Secrets & data
 .env
-data
+/data
 *.db
 *.db-wal
 *.db-shm
