@@ -1,0 +1,17 @@
+services:
+  linkboard:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      APP_PASSWORD: ${APP_PASSWORD:-changeme}
+      SESSION_SECRET: ${SESSION_SECRET:?define SESSION_SECRET en tu .env}
+      #PORT: 3001
+      DB_PATH: /data/linkboard.db
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    volumes:
+      - linkboard-data:/data
+    restart: unless-stopped
+
+volumes:
+  linkboard-data:
