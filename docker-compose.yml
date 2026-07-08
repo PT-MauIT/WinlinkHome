@@ -9,6 +9,7 @@ services:
       #PORT: 3001
       DB_PATH: /data/linkboard.db
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      UNSPLASH_ACCESS_KEY: ${UNSPLASH_ACCESS_KEY:-}
     volumes:
       - linkboard-data:/data
     restart: unless-stopped
