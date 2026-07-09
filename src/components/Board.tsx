@@ -9,6 +9,7 @@ import { Footer } from './Footer'
 import { LinkFormModal } from './modals/LinkFormModal'
 import { CategoryFormModal } from './modals/CategoryFormModal'
 import { SettingsFab } from './SettingsFab'
+import { LiquidRail } from './LiquidRail'
 
 export function Board() {
   const load = useStore((s) => s.load)
@@ -36,6 +37,7 @@ export function Board() {
         <Footer />
       </div>
 
+      <LiquidRail />
       <LinkFormModal />
       <CategoryFormModal />
       <SettingsFab />
