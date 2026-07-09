@@ -1,15 +1,16 @@
 import { Home6, DirectNotification2 } from 'reicon-react'
 
-/** Liquid-glass navigation rail pinned to the right edge, vertically centered.
+/** Liquid-glass navigation rail pinned to the left edge, vertically centered.
  *  Grows downward as items are added. Top item is the Parque Tempisque logo,
- *  followed by the nav buttons. Add further buttons below Home. */
+ *  followed by the nav buttons. Each button reveals a liquid-glass label that
+ *  deploys to the right on hover. Add further buttons below News. */
 export function LiquidRail() {
   const goHome = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
   return (
     <nav
       aria-label="Navegación"
-      className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 sm:block"
+      className="fixed left-4 top-1/2 z-40 hidden -translate-y-1/2 sm:block"
     >
       <div className="relative flex flex-col items-center gap-2 rounded-[26px] border border-white/10 bg-gradient-to-b from-white/[0.13] to-white/[0.04] p-2 shadow-[0_10px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
         {/* top sheen — sells the "liquid glass" surface */}
@@ -55,7 +56,6 @@ function RailButton({ label, icon: Icon, active = false, onClick }: RailButtonPr
     <button
       type="button"
       onClick={onClick}
-      title={label}
       aria-label={label}
       aria-current={active ? 'page' : undefined}
       className={`group relative flex h-11 w-11 items-center justify-center rounded-2xl border transition ${
@@ -64,11 +64,19 @@ function RailButton({ label, icon: Icon, active = false, onClick }: RailButtonPr
           : 'border-transparent text-slate-300 hover:border-white/10 hover:bg-white/[0.08] hover:text-white'
       }`}
     >
-      {/* active accent bar on the inner (content-facing) edge */}
+      {/* active accent bar on the outer (screen) edge */}
       {active && (
         <span className="absolute -left-2 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-emerald-300" />
       )}
+
       <Icon size={19} />
+
+      {/* hover label — deploys to the right with the liquid-glass surface */}
+      <span className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 pl-3">
+        <span className="block -translate-x-1.5 whitespace-nowrap rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.14] to-white/[0.05] px-3 py-1.5 text-sm font-medium text-slate-100 opacity-0 shadow-[0_10px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100">
+          {label}
+        </span>
+      </span>
     </button>
   )
 }
