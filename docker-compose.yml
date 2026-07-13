@@ -30,7 +30,7 @@ services:
       SESSION_SECRET: ${SESSION_SECRET:?define SESSION_SECRET en tu .env}
       # --- acceso ---
       APP_PASSWORD: ${APP_PASSWORD:-changeme}
-      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@parquetempisque.dev}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-mquiros@parquetempisque.com}
       ADMIN_EMAILS: ${ADMIN_EMAILS:-}
       # --- Microsoft Entra ID (SSO) ---
       AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
