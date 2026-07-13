@@ -11,7 +11,8 @@ export function SearchBar() {
   const looksLikeUrl = isProbablyUrl(query)
 
   const save = () => {
-    openAddLink(query.trim())
+    // pasting a URL to save creates a personal favorite
+    openAddLink('favorite', query.trim())
     setQuery('')
   }
 

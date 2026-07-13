@@ -15,13 +15,23 @@ export function LinkFormModal() {
 
   const categories = useStore((s) => s.categories)
   const links = useStore((s) => s.links)
+  const favorites = useStore((s) => s.favorites)
   const activeCategoryId = useStore((s) => s.activeCategoryId)
   const addLink = useStore((s) => s.addLink)
   const updateLink = useStore((s) => s.updateLink)
   const removeLink = useStore((s) => s.removeLink)
+  const addFavorite = useStore((s) => s.addFavorite)
+  const updateFavorite = useStore((s) => s.updateFavorite)
+  const removeFavorite = useStore((s) => s.removeFavorite)
+
+  const isWorkspace = linkModal.kind === 'workspace'
+  const collection = isWorkspace ? links : favorites
+  const add = isWorkspace ? addLink : addFavorite
+  const update = isWorkspace ? updateLink : updateFavorite
+  const remove = isWorkspace ? removeLink : removeFavorite
 
   const editing = linkModal.editId
-    ? links.find((l) => l.id === linkModal.editId) ?? null
+    ? collection.find((l) => l.id === linkModal.editId) ?? null
     : null
 
   const [url, setUrl] = useState('')
@@ -63,16 +73,18 @@ export function LinkFormModal() {
       url: normalizeUrl(url),
       categoryId,
     }
-    if (editing) updateLink(editing.id, payload)
-    else addLink(payload)
+    if (editing) update(editing.id, payload)
+    else add(payload)
     closeLinkModal()
   }
+
+  const noun = isWorkspace ? 'herramienta' : 'favorito'
 
   return (
     <Modal
       open={linkModal.open}
       onClose={closeLinkModal}
-      title={editing ? 'Editar enlace' : 'Nuevo enlace'}
+      title={editing ? `Editar ${noun}` : `Nuevo ${noun}`}
     >
       {/* live preview */}
       <div className="mb-4 flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3">
@@ -152,7 +164,7 @@ export function LinkFormModal() {
         {editing ? (
           <button
             onClick={() => {
-              removeLink(editing.id)
+              remove(editing.id)
               closeLinkModal()
             }}
             className="flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-sm text-red-400 transition hover:bg-red-500/10"

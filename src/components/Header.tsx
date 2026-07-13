@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Sunrise, Sun, Moon, Logout } from 'reicon-react'
-import { useStore } from '../store/useStore'
 import { useAuth } from '../store/useAuth'
 import { useNow } from '../lib/useNow'
 import { getGreeting, formatDate, formatTime } from '../lib/time'
@@ -9,8 +8,8 @@ const GREETING_ICON = { sunrise: Sunrise, sun: Sun, moon: Moon }
 
 export function Header() {
   const now = useNow(1000)
-  const userName = useStore((s) => s.userName)
-  const setUserName = useStore((s) => s.setUserName)
+  const userName = useAuth((s) => s.user?.name ?? 'amigo')
+  const setUserName = useAuth((s) => s.setName)
   const logout = useAuth((s) => s.logout)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(userName)

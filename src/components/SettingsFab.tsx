@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Gear, Image, ChevronDown } from 'reicon-react'
+import { Gear, Image, ChevronDown, Users } from 'reicon-react'
 import { ImageSourcePanel } from './settings/ImageSourcePanel'
+import { useAuth } from '../store/useAuth'
+import { useUI } from '../store/useUI'
 
 /** Floating gear in the bottom-right corner. Faint until hovered; opens a
  *  settings panel upward. First (and for now only) group: image source. */
@@ -8,6 +10,8 @@ export function SettingsFab() {
   const [open, setOpen] = useState(false)
   const [imageOpen, setImageOpen] = useState(true)
   const ref = useRef<HTMLDivElement>(null)
+  const isAdmin = useAuth((s) => s.user?.role === 'admin')
+  const openGroupsPanel = useUI((s) => s.openGroupsPanel)
 
   useEffect(() => {
     if (!open) return
@@ -22,6 +26,9 @@ export function SettingsFab() {
       document.removeEventListener('keydown', onKey)
     }
   }, [open])
+
+  // All current settings (background, groups) are admin-only.
+  if (!isAdmin) return null
 
   return (
     <div ref={ref} className="fixed bottom-4 right-4 z-40 flex flex-col items-end">
@@ -51,6 +58,18 @@ export function SettingsFab() {
               </div>
             )}
           </div>
+
+          {/* admin: groups & users */}
+          <button
+            onClick={() => {
+              openGroupsPanel()
+              setOpen(false)
+            }}
+            className="mt-2 flex w-full items-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.02] px-3 py-2.5 text-sm text-slate-200 transition hover:bg-white/5"
+          >
+            <Users size={16} className="text-slate-400" />
+            <span className="flex-1 text-left">Grupos y usuarios</span>
+          </button>
         </div>
       )}
 

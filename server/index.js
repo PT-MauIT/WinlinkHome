@@ -39,7 +39,11 @@ import {
   clearSessionCookie,
   requireAuth,
   requireAdmin,
+  signState,
+  readState,
+  COOKIE_SECURE,
 } from './auth.js'
+import { buildLoginUrl, completeLogin, ssoConfigured, REDIRECT_ORIGIN } from './oauth.js'
 
 await initSchema()
 await seedIfEmpty()
@@ -56,6 +60,8 @@ const UPLOADS_DIR = join(DATA_DIR, 'uploads')
 mkdirSync(UPLOADS_DIR, { recursive: true })
 
 const BOOTSTRAP_ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@parquetempisque.dev'
+const APP_BASE_URL = process.env.APP_BASE_URL || 'http://localhost:5173'
+const OAUTH_COOKIE = 'lb_oauth'
 const UNSPLASH_KEY = process.env.UNSPLASH_ACCESS_KEY || ''
 const UPLOAD_EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' }
 
@@ -90,7 +96,42 @@ api.post('/logout', (_req, res) => {
   res.json({ ok: true })
 })
 
-// NOTE: Microsoft SSO routes (/auth/login, /auth/callback) are added in phase 2.
+// ---- Microsoft SSO (Entra, single tenant) ---------------------------------
+
+api.get('/auth/login', async (_req, res) => {
+  if (!ssoConfigured) {
+    return res.status(503).json({ error: 'SSO de Microsoft no está configurado' })
+  }
+  try {
+    const { url, codeVerifier, state, nonce } = await buildLoginUrl()
+    res.cookie(OAUTH_COOKIE, signState({ codeVerifier, state, nonce }), {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: COOKIE_SECURE,
+      maxAge: 10 * 60 * 1000,
+      path: '/',
+    })
+    res.redirect(url)
+  } catch (e) {
+    console.error('SSO init error:', e)
+    res.redirect(`${APP_BASE_URL}/?error=sso_init`)
+  }
+})
+
+api.get('/auth/callback', async (req, res) => {
+  const saved = readState(req.cookies?.[OAUTH_COOKIE])
+  res.clearCookie(OAUTH_COOKIE, { path: '/' })
+  if (!saved) return res.redirect(`${APP_BASE_URL}/?error=sso_state`)
+  try {
+    const currentUrl = `${REDIRECT_ORIGIN}${req.originalUrl}`
+    const user = await completeLogin(currentUrl, saved)
+    setSessionCookie(res, user.id)
+    res.redirect(`${APP_BASE_URL}/`)
+  } catch (e) {
+    console.error('SSO callback error:', e)
+    res.redirect(`${APP_BASE_URL}/?error=sso`)
+  }
+})
 
 // ---- protected (any signed-in user) ---------------------------------------
 
