@@ -1,6 +1,7 @@
 import { Plus } from 'reicon-react'
 import { useStore } from '../store/useStore'
 import { useUI } from '../store/useUI'
+import { useAuth } from '../store/useAuth'
 import { colorOf } from '../lib/colors'
 
 export function CategoryFilter() {
@@ -8,6 +9,7 @@ export function CategoryFilter() {
   const activeCategoryId = useStore((s) => s.activeCategoryId)
   const setActiveCategory = useStore((s) => s.setActiveCategory)
   const openCategoryModal = useUI((s) => s.openCategoryModal)
+  const isAdmin = useAuth((s) => s.user?.role === 'admin')
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -27,13 +29,15 @@ export function CategoryFilter() {
         />
       ))}
 
-      <button
-        onClick={openCategoryModal}
-        className="flex items-center gap-1.5 rounded-full border border-dashed border-white/20 px-3.5 py-1.5 text-sm text-slate-400 transition hover:border-white/40 hover:text-slate-200"
-      >
-        <Plus size={15} />
-        Agregar
-      </button>
+      {isAdmin && (
+        <button
+          onClick={openCategoryModal}
+          className="flex items-center gap-1.5 rounded-full border border-dashed border-white/20 px-3.5 py-1.5 text-sm text-slate-400 transition hover:border-white/40 hover:text-slate-200"
+        >
+          <Plus size={15} />
+          Agregar
+        </button>
+      )}
     </div>
   )
 }

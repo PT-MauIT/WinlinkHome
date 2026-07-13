@@ -1,11 +1,20 @@
-import { Home6, DirectNotification2 } from 'reicon-react'
+import { Home6, Grid, Star, DirectNotification2 } from 'reicon-react'
+import { useStore } from '../store/useStore'
+import { useUI } from '../store/useUI'
 
 /** Liquid-glass navigation rail pinned to the left edge, vertically centered.
- *  Grows downward as items are added. Top item is the Parque Tempisque logo,
- *  followed by the nav buttons. Each button reveals a liquid-glass label that
- *  deploys to the right on hover. Add further buttons below News. */
+ *  Top item is the Parque Tempisque logo, followed by the view switches and
+ *  the news panel trigger. Each button reveals a liquid-glass label on hover. */
 export function LiquidRail() {
-  const goHome = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+  const view = useStore((s) => s.view)
+  const setView = useStore((s) => s.setView)
+  const openNewsPanel = useUI((s) => s.openNewsPanel)
+  const newsPanelOpen = useUI((s) => s.newsPanelOpen)
+
+  const goto = (v: 'all' | 'workspace' | 'favorites') => {
+    setView(v)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <nav
@@ -28,17 +37,10 @@ export function LiquidRail() {
 
         <div className="my-0.5 h-px w-7 bg-white/10" />
 
-        {/* Home → pantalla principal (activo: es la vista actual) */}
-        <RailButton label="Inicio" icon={Home6} active onClick={goHome} />
-
-        {/* Noticias */}
-        <RailButton
-          label="Noticias"
-          icon={DirectNotification2}
-          onClick={() => {}}
-        />
-
-        {/* next rail items go here */}
+        <RailButton label="Inicio" icon={Home6} active={view === 'all'} onClick={() => goto('all')} />
+        <RailButton label="Workspace" icon={Grid} active={view === 'workspace'} onClick={() => goto('workspace')} />
+        <RailButton label="Favoritos" icon={Star} active={view === 'favorites'} onClick={() => goto('favorites')} />
+        <RailButton label="Noticias" icon={DirectNotification2} active={newsPanelOpen} onClick={openNewsPanel} />
       </div>
     </nav>
   )

@@ -4,48 +4,59 @@ import { api } from '../lib/api'
 
 const DEFAULT_BACKGROUND: Background = { source: 'default', url: null, credit: null }
 
+export type BoardView = 'all' | 'workspace' | 'favorites'
+
 type LinkInput = { title: string; url: string; categoryId: string | null }
 type CategoryInput = { name: string; color: PaletteKey }
 
 interface Store {
-  userName: string
   categories: Category[]
-  links: LinkItem[]
+  links: LinkItem[] // workspace (admin-managed)
+  favorites: LinkItem[] // per-user
   activeCategoryId: string | null
   query: string
+  view: BoardView
   loaded: boolean
   background: Background
 
   load: () => Promise<void>
-  setUserName: (name: string) => void
   setActiveCategory: (id: string | null) => void
   setQuery: (q: string) => void
+  setView: (v: BoardView) => void
   setBackground: (data: Background) => Promise<void>
 
+  // workspace links (admin)
   addLink: (data: LinkInput) => Promise<void>
   updateLink: (id: string, data: Partial<LinkInput>) => Promise<void>
   removeLink: (id: string) => Promise<void>
 
+  // favorites (user)
+  addFavorite: (data: LinkInput) => Promise<void>
+  updateFavorite: (id: string, data: Partial<LinkInput>) => Promise<void>
+  removeFavorite: (id: string) => Promise<void>
+
+  // categories (admin)
   addCategory: (data: CategoryInput) => Promise<void>
   updateCategory: (id: string, data: Partial<CategoryInput>) => Promise<void>
   removeCategory: (id: string) => Promise<void>
 }
 
 export const useStore = create<Store>((set, get) => ({
-  userName: 'amigo',
   categories: [],
   links: [],
+  favorites: [],
   activeCategoryId: null,
   query: '',
+  view: 'all',
   loaded: false,
   background: DEFAULT_BACKGROUND,
 
   load: async () => {
     const state = await api.getState()
     set({
-      userName: state.userName,
       categories: state.categories,
       links: state.links,
+      favorites: state.favorites,
       background: state.background ?? DEFAULT_BACKGROUND,
       loaded: true,
     })
@@ -53,6 +64,7 @@ export const useStore = create<Store>((set, get) => ({
 
   setActiveCategory: (id) => set({ activeCategoryId: id }),
   setQuery: (q) => set({ query: q }),
+  setView: (v) => set({ view: v }),
 
   // optimistic — the picker feels instant; revert to server truth on failure
   setBackground: async (data) => {
@@ -67,16 +79,7 @@ export const useStore = create<Store>((set, get) => ({
     }
   },
 
-  setUserName: (name) => {
-    const clean = name.trim() || 'amigo'
-    set({ userName: clean })
-    api.setName(clean).catch((e) => {
-      console.error(e)
-      void get().load()
-    })
-  },
-
-  // creates go server-first (we need the generated id back)
+  // ---- workspace links (admin) ----
   addLink: async (data) => {
     try {
       const link = await api.addLink(data)
@@ -86,18 +89,6 @@ export const useStore = create<Store>((set, get) => ({
       void get().load()
     }
   },
-
-  addCategory: async (data) => {
-    try {
-      const category = await api.addCategory(data)
-      set((s) => ({ categories: [...s.categories, category] }))
-    } catch (e) {
-      console.error(e)
-      void get().load()
-    }
-  },
-
-  // updates & deletes are optimistic, reverting on failure
   updateLink: async (id, data) => {
     const prev = get().links
     set((s) => ({ links: s.links.map((l) => (l.id === id ? { ...l, ...data } : l)) }))
@@ -108,7 +99,6 @@ export const useStore = create<Store>((set, get) => ({
       set({ links: prev })
     }
   },
-
   removeLink: async (id) => {
     const prev = get().links
     set((s) => ({ links: s.links.filter((l) => l.id !== id) }))
@@ -120,6 +110,47 @@ export const useStore = create<Store>((set, get) => ({
     }
   },
 
+  // ---- favorites (user) ----
+  addFavorite: async (data) => {
+    try {
+      const fav = await api.addFavorite(data)
+      set((s) => ({ favorites: [...s.favorites, fav] }))
+    } catch (e) {
+      console.error(e)
+      void get().load()
+    }
+  },
+  updateFavorite: async (id, data) => {
+    const prev = get().favorites
+    set((s) => ({ favorites: s.favorites.map((l) => (l.id === id ? { ...l, ...data } : l)) }))
+    try {
+      await api.updateFavorite(id, data)
+    } catch (e) {
+      console.error(e)
+      set({ favorites: prev })
+    }
+  },
+  removeFavorite: async (id) => {
+    const prev = get().favorites
+    set((s) => ({ favorites: s.favorites.filter((l) => l.id !== id) }))
+    try {
+      await api.removeFavorite(id)
+    } catch (e) {
+      console.error(e)
+      set({ favorites: prev })
+    }
+  },
+
+  // ---- categories (admin) ----
+  addCategory: async (data) => {
+    try {
+      const category = await api.addCategory(data)
+      set((s) => ({ categories: [...s.categories, category] }))
+    } catch (e) {
+      console.error(e)
+      void get().load()
+    }
+  },
   updateCategory: async (id, data) => {
     const prev = get().categories
     set((s) => ({
@@ -132,20 +163,21 @@ export const useStore = create<Store>((set, get) => ({
       set({ categories: prev })
     }
   },
-
   removeCategory: async (id) => {
     const prevCategories = get().categories
     const prevLinks = get().links
+    const prevFavorites = get().favorites
     set((s) => ({
       categories: s.categories.filter((c) => c.id !== id),
       links: s.links.map((l) => (l.categoryId === id ? { ...l, categoryId: null } : l)),
+      favorites: s.favorites.map((l) => (l.categoryId === id ? { ...l, categoryId: null } : l)),
       activeCategoryId: s.activeCategoryId === id ? null : s.activeCategoryId,
     }))
     try {
       await api.removeCategory(id)
     } catch (e) {
       console.error(e)
-      set({ categories: prevCategories, links: prevLinks })
+      set({ categories: prevCategories, links: prevLinks, favorites: prevFavorites })
     }
   },
 }))

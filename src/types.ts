@@ -22,6 +22,44 @@ export interface LinkItem {
   createdAt: number
 }
 
+export type Role = 'admin' | 'member'
+
+export interface Group {
+  id: string
+  name: string
+  slug: string
+}
+
+export interface User {
+  id: string
+  email: string
+  name: string
+  role: Role
+  groups: Group[]
+}
+
+/** A user as seen by an admin in the groups panel (includes group membership). */
+export interface UserSummary {
+  id: string
+  email: string
+  name: string
+  role: Role
+  groups: Group[]
+}
+
+export type NewsAudience = 'general' | 'group'
+
+export interface NewsItem {
+  id: string
+  title: string
+  body: string
+  audience: NewsAudience
+  groupId: string | null
+  groupName: string | null
+  authorName: string | null
+  createdAt: number
+}
+
 export type BackgroundSource = 'default' | 'unsplash' | 'admin' | 'collaborator'
 
 export interface Background {

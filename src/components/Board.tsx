@@ -10,6 +10,9 @@ import { LinkFormModal } from './modals/LinkFormModal'
 import { CategoryFormModal } from './modals/CategoryFormModal'
 import { SettingsFab } from './SettingsFab'
 import { LiquidRail } from './LiquidRail'
+import { NewsPanel } from './news/NewsPanel'
+import { NewsFormModal } from './news/NewsFormModal'
+import { GroupsPanel } from './admin/GroupsPanel'
 
 export function Board() {
   const load = useStore((s) => s.load)
@@ -40,6 +43,9 @@ export function Board() {
       <LiquidRail />
       <LinkFormModal />
       <CategoryFormModal />
+      <NewsPanel />
+      <NewsFormModal />
+      <GroupsPanel />
       <SettingsFab />
     </>
   )

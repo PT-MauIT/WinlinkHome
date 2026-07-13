@@ -1,14 +1,46 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-winlink}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?define POSTGRES_PASSWORD en tu .env}
+      POSTGRES_DB: ${POSTGRES_DB:-winlinkhome}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Publicado para desarrollo local (el proceso node corre fuera de compose).
+    # En producción puedes quitar 'ports' si la app corre en la misma red.
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-winlink} -d ${POSTGRES_DB:-winlinkhome}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   linkboard:
     build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
     #ports:
     #  - "3001:3001"
     environment:
-      APP_PASSWORD: ${APP_PASSWORD:-changeme}
+      DATABASE_URL: ${DATABASE_URL:-postgres://${POSTGRES_USER:-winlink}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-winlinkhome}}
       SESSION_SECRET: ${SESSION_SECRET:?define SESSION_SECRET en tu .env}
-      #PORT: 3001
-      DB_PATH: /data/linkboard.db
-      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      # --- acceso ---
+      APP_PASSWORD: ${APP_PASSWORD:-changeme}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-mquiros@parquetempisque.com}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      # --- Microsoft Entra ID (SSO) ---
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET:-}
+      AZURE_REDIRECT_URI: ${AZURE_REDIRECT_URI:-https://home.parquetempisque.dev/api/auth/callback}
+      APP_BASE_URL: ${APP_BASE_URL:-https://home.parquetempisque.dev}
+      # --- otros ---
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      DATA_DIR: /data
       UNSPLASH_ACCESS_KEY: ${UNSPLASH_ACCESS_KEY:-}
     volumes:
       - linkboard-data:/data
@@ -16,3 +48,4 @@ services:
 
 volumes:
   linkboard-data:
+  pgdata:
