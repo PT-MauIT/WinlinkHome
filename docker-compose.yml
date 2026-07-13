@@ -10,7 +10,7 @@ services:
     # Publicado para desarrollo local (el proceso node corre fuera de compose).
     # En producción puedes quitar 'ports' si la app corre en la misma red.
     ports:
-      - "5432:5432"
+    #  - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-winlink} -d ${POSTGRES_DB:-winlinkhome}"]
       interval: 5s
