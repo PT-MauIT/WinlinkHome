@@ -358,9 +358,48 @@ const toLink = (r) => ({
   createdAt: Number(r.created_at),
 })
 
-export async function getWorkspaceLinks() {
-  const { rows } = await pool.query('SELECT * FROM links ORDER BY position, created_at')
-  return rows.map(toLink)
+export async function getGlobalWorkspaceLinks() {
+  const { rows } = await pool.query(`
+    SELECT l.* FROM links l
+    WHERE NOT EXISTS (SELECT 1 FROM link_groups lg WHERE lg.link_id = l.id)
+    ORDER BY l.position, l.created_at
+  `)
+  return rows.map((r) => ({ ...toLink(r), groupIds: [] }))
+}
+
+export async function getGroupWorkspaceLinks(user) {
+  // Miembro: sus grupos. Admin: todos los grupos que tengan enlaces.
+  const groups = user.role === 'admin'
+    ? (await pool.query(`
+        SELECT DISTINCT g.id, g.name, g.slug FROM groups g
+        JOIN link_groups lg ON lg.group_id = g.id
+        ORDER BY g.name
+      `)).rows
+    : (await pool.query(`
+        SELECT g.id, g.name, g.slug FROM groups g
+        JOIN user_groups ug ON ug.group_id = g.id
+        WHERE ug.user_id = $1
+        ORDER BY g.name
+      `, [user.id])).rows
+
+  const sections = []
+  for (const g of groups) {
+    const { rows } = await pool.query(`
+      SELECT l.*,
+        (SELECT COALESCE(array_agg(lg2.group_id), '{}')
+           FROM link_groups lg2 WHERE lg2.link_id = l.id) AS group_ids
+      FROM links l
+      JOIN link_groups lg ON lg.link_id = l.id AND lg.group_id = $1
+      ORDER BY l.position, l.created_at
+    `, [g.id])
+    if (rows.length > 0) {
+      sections.push({
+        group: g,
+        links: rows.map((r) => ({ ...toLink(r), groupIds: r.group_ids })),
+      })
+    }
+  }
+  return sections
 }
 
 export async function addLink({ title, url, categoryId = null, groupIds = [] }) {
@@ -499,9 +538,10 @@ export async function removeNews(id) {
 // ---- aggregate state ------------------------------------------------------
 
 export async function getState(user) {
-  const [categories, links, favorites, myGroups, background] = await Promise.all([
+  const [categories, links, groupLinks, favorites, myGroups, background] = await Promise.all([
     getCategories(),
-    getWorkspaceLinks(),
+    getGlobalWorkspaceLinks(),
+    getGroupWorkspaceLinks(user),
     listFavorites(user.id),
     getUserGroups(user.id),
     getBackground(),
@@ -510,6 +550,7 @@ export async function getState(user) {
     user: { ...user, groups: myGroups },
     categories,
     links,
+    groupLinks,
     favorites,
     background,
   }
