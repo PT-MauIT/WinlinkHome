@@ -145,6 +145,28 @@ grupo (mismo `filterList`).
   y solo en `kind === 'workspace'` (los favoritos no tienen grupos).
 - Al guardar, incluir `groupIds` en el payload.
 
+### Dropdowns personalizados (`src/components/ui/Select.tsx`)
+Los `<select>` nativos ocultan la flecha con `appearance-none`, pero su **lista
+de opciones abierta** usa el estilo del navegador (fondo claro / texto oscuro),
+que rompe el tema oscuro y queda ilegible. El estilizado de `<option>` no es
+confiable entre navegadores/SO, así que se crea un **componente `Select`
+reutilizable** que coincide con el diseño glass y es legible.
+
+- **Componente controlado.** Props: `value`, `onChange`, `options: {value,label}[]`,
+  `placeholder`, `disabled`, `className`.
+- **Control cerrado:** mismo estilo que la clase `field` (borde `white/10`, fondo
+  `white/5`, texto `slate-100`) + chevron (`ChevronDown` de `reicon-react`).
+- **Panel abierto:** glass oscuro (fondo tipo `slate-900/95`, `backdrop-blur`,
+  borde `white/10`, sombra), opciones con texto `slate-100`, hover
+  `bg-white/[0.06]`, la seleccionada con acento esmeralda (coherente con el resto
+  de la app). Legible sobre cualquier fondo.
+- **Comportamiento:** abre/cierra al hacer clic, cierra al hacer clic fuera y con
+  `Escape`, navegación básica por teclado (flechas + Enter). Reposiciona dentro
+  del `Modal` sin desbordar.
+- **Se aplica a los dos dropdowns existentes:** categoría en `LinkFormModal` y
+  grupo en `NewsFormModal`. (El selector múltiple de grupos del feature ya son
+  chips, así que no usa `<select>` y no se ve afectado.)
+
 ## Flujo end-to-end
 
 1. Admin abre "Agregar" en Workspace → crea "QuickBooks" → asigna grupo
@@ -171,6 +193,8 @@ El proyecto no tiene framework de tests. Verificación por el dev server
 - Miembro de ese grupo lo ve; miembro de otro grupo / sin grupos, no.
 - Admin ve todas las secciones de grupo.
 - Enlaces existentes (sin grupo) siguen globales y visibles para todos.
+- Los dropdowns (categoría y grupo) abren con estilo glass oscuro, legibles, y
+  cierran con clic fuera / `Escape`.
 
 Opcional (no bloqueante): un test puntual de Node para la lógica de filtrado de
 `getGroupWorkspaceLinks` / `getGlobalWorkspaceLinks`.
@@ -185,4 +209,6 @@ Opcional (no bloqueante): un test puntual de Node para la lógica de filtrado de
 | `src/lib/api.ts` | `LinkInput.groupIds`; `StatePayload.groupLinks` |
 | `src/store/useStore.ts` | estado `groupLinks`; recarga en mutaciones de Workspace |
 | `src/components/LinkGrid.tsx` | secciones "De mis grupos" |
-| `src/components/modals/LinkFormModal.tsx` | selector múltiple de grupos (admin, workspace) |
+| `src/components/modals/LinkFormModal.tsx` | selector múltiple de grupos (admin, workspace); usa `Select` para categoría |
+| `src/components/ui/Select.tsx` | **nuevo** — dropdown personalizado, legible y acorde al diseño |
+| `src/components/news/NewsFormModal.tsx` | usa `Select` para el grupo de la noticia |
