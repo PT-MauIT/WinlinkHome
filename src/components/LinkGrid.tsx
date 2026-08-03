@@ -10,6 +10,7 @@ import { LinkCard } from './LinkCard'
 export function LinkGrid() {
   const links = useStore((s) => s.links)
   const favorites = useStore((s) => s.favorites)
+  const groupLinks = useStore((s) => s.groupLinks)
   const categories = useStore((s) => s.categories)
   const activeCategoryId = useStore((s) => s.activeCategoryId)
   const query = useStore((s) => s.query)
@@ -57,6 +58,32 @@ export function LinkGrid() {
           }
         />
       )}
+
+      {showWorkspace &&
+        groupLinks.some((gl) => filterList(gl.links).length > 0) && (
+          <div className="space-y-9">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              {isAdmin ? 'Enlaces por grupo' : 'De mis grupos'}
+            </p>
+            {groupLinks.map((gl) => {
+              const items = filterList(gl.links)
+              if (items.length === 0) return null
+              return (
+                <Section
+                  key={gl.group.id}
+                  title={gl.group.name}
+                  subtitle="Herramientas del grupo"
+                  items={items}
+                  kind="workspace"
+                  categoryById={categoryById}
+                  canAdd={false}
+                  onAdd={() => {}}
+                  emptyLabel=""
+                />
+              )
+            })}
+          </div>
+        )}
 
       {showFavorites && (
         <Section
