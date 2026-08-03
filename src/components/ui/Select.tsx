@@ -46,7 +46,7 @@ export function Select({
       const i = options.findIndex((o) => o.value === value)
       setActive(i < 0 ? 0 : i)
     }
-  }, [open, value, options])
+  }, [open, value])
 
   const choose = (v: string) => {
     onChange(v)
@@ -82,7 +82,16 @@ export function Select({
 
   return (
     <div ref={ref} className={`relative ${className}`}>
-      <button type="button" disabled={disabled} onClick={() => setOpen((o) => !o)} onKeyDown={onKeyDown} className={control}>
+      <button
+        type="button"
+        role="combobox"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        disabled={disabled}
+        onClick={() => setOpen((o) => !o)}
+        onKeyDown={onKeyDown}
+        className={control}
+      >
         <span className={selected ? 'text-slate-100' : 'text-slate-500'}>
           {selected ? selected.label : placeholder}
         </span>
@@ -99,7 +108,7 @@ export function Select({
             const isSel = o.value === value
             const isActive = i === active
             return (
-              <li key={o.value}>
+              <li key={o.value} role="option" aria-selected={isSel}>
                 <button
                   type="button"
                   onMouseEnter={() => setActive(i)}
