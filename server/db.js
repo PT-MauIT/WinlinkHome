@@ -95,6 +95,13 @@ const SCHEMA = `
     author_id  UUID REFERENCES users(id)  ON DELETE SET NULL,
     created_at BIGINT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS link_groups (
+    link_id  TEXT NOT NULL REFERENCES links(id)  ON DELETE CASCADE,
+    group_id UUID NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
+    PRIMARY KEY (link_id, group_id)
+  );
+  CREATE INDEX IF NOT EXISTS idx_link_groups_group ON link_groups(group_id);
 `
 
 export async function initSchema() {
@@ -284,6 +291,31 @@ export async function setUserGroups(userId, groupIds) {
   }
 }
 
+export async function setLinkGroups(linkId, groupIds) {
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    await client.query('DELETE FROM link_groups WHERE link_id = $1', [linkId])
+    for (const gid of groupIds) {
+      await client.query(
+        'INSERT INTO link_groups (link_id, group_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+        [linkId, gid],
+      )
+    }
+    await client.query('COMMIT')
+  } catch (e) {
+    await client.query('ROLLBACK')
+    throw e
+  } finally {
+    client.release()
+  }
+}
+
+export async function getLinkGroupIds(linkId) {
+  const { rows } = await pool.query('SELECT group_id FROM link_groups WHERE link_id = $1', [linkId])
+  return rows.map((r) => r.group_id)
+}
+
 // ---- categories -----------------------------------------------------------
 
 export async function getCategories() {
@@ -331,7 +363,7 @@ export async function getWorkspaceLinks() {
   return rows.map(toLink)
 }
 
-export async function addLink({ title, url, categoryId = null }) {
+export async function addLink({ title, url, categoryId = null, groupIds = [] }) {
   const id = uid()
   const createdAt = Date.now()
   const { rows } = await pool.query('SELECT COALESCE(MAX(position), 0) + 1 AS p FROM links')
@@ -339,7 +371,8 @@ export async function addLink({ title, url, categoryId = null }) {
     'INSERT INTO links (id, title, url, category_id, position, created_at) VALUES ($1, $2, $3, $4, $5, $6)',
     [id, title, url, categoryId, rows[0].p, createdAt],
   )
-  return { id, title, url, categoryId, createdAt }
+  await setLinkGroups(id, Array.isArray(groupIds) ? groupIds : [])
+  return { id, title, url, categoryId, groupIds: Array.isArray(groupIds) ? groupIds : [], createdAt }
 }
 
 export async function updateLink(id, data) {
@@ -353,7 +386,9 @@ export async function updateLink(id, data) {
     'UPDATE links SET title = $2, url = $3, category_id = $4 WHERE id = $1 RETURNING *',
     [id, title, url, categoryId],
   )
-  return toLink(upd[0])
+  if (Array.isArray(data.groupIds)) await setLinkGroups(id, data.groupIds)
+  const groupIds = await getLinkGroupIds(id)
+  return { ...toLink(upd[0]), groupIds }
 }
 
 export async function removeLink(id) {
