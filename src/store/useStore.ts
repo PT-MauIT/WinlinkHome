@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Background, Category, LinkItem, PaletteKey } from '../types'
+import type { Background, Category, GroupLinks, LinkItem, PaletteKey } from '../types'
 import { api } from '../lib/api'
 
 const DEFAULT_BACKGROUND: Background = { source: 'default', url: null, credit: null }
@@ -12,6 +12,7 @@ type CategoryInput = { name: string; color: PaletteKey }
 interface Store {
   categories: Category[]
   links: LinkItem[] // workspace (admin-managed)
+  groupLinks: GroupLinks[]
   favorites: LinkItem[] // per-user
   activeCategoryId: string | null
   query: string
@@ -44,6 +45,7 @@ interface Store {
 export const useStore = create<Store>((set, get) => ({
   categories: [],
   links: [],
+  groupLinks: [],
   favorites: [],
   activeCategoryId: null,
   query: '',
@@ -56,6 +58,7 @@ export const useStore = create<Store>((set, get) => ({
     set({
       categories: state.categories,
       links: state.links,
+      groupLinks: state.groupLinks ?? [],
       favorites: state.favorites,
       background: state.background ?? DEFAULT_BACKGROUND,
       loaded: true,
@@ -82,31 +85,29 @@ export const useStore = create<Store>((set, get) => ({
   // ---- workspace links (admin) ----
   addLink: async (data) => {
     try {
-      const link = await api.addLink(data)
-      set((s) => ({ links: [...s.links, link] }))
+      await api.addLink(data)
+      await get().load()
     } catch (e) {
       console.error(e)
       void get().load()
     }
   },
   updateLink: async (id, data) => {
-    const prev = get().links
-    set((s) => ({ links: s.links.map((l) => (l.id === id ? { ...l, ...data } : l)) }))
     try {
       await api.updateLink(id, data)
+      await get().load()
     } catch (e) {
       console.error(e)
-      set({ links: prev })
+      void get().load()
     }
   },
   removeLink: async (id) => {
-    const prev = get().links
-    set((s) => ({ links: s.links.filter((l) => l.id !== id) }))
     try {
       await api.removeLink(id)
+      await get().load()
     } catch (e) {
       console.error(e)
-      set({ links: prev })
+      void get().load()
     }
   },
 

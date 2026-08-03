@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Modal } from '../ui/Modal'
+import { Select } from '../ui/Select'
 import { useUI } from '../../store/useUI'
 import { useNews } from '../../store/useNews'
 import { useGroups } from '../../store/useGroups'
@@ -95,18 +96,12 @@ export function NewsFormModal() {
         {audience === 'group' && (
           <label className="block">
             <span className="mb-1.5 block text-xs font-medium text-slate-400">Grupo</span>
-            <select
+            <Select
               value={groupId ?? ''}
-              onChange={(e) => setGroupId(e.target.value || null)}
-              className={`${field} appearance-none`}
-            >
-              <option value="">Selecciona un grupo…</option>
-              {groups.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setGroupId(v || null)}
+              placeholder="Selecciona un grupo…"
+              options={groups.map((g) => ({ value: g.id, label: g.name }))}
+            />
             {groups.length === 0 && (
               <p className="mt-1.5 text-xs text-amber-400/80">
                 No hay grupos todavía. Créalos en “Grupos y usuarios”.

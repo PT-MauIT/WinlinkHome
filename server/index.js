@@ -180,9 +180,9 @@ api.get('/news', async (req, res) => {
 
 // Workspace links
 api.post('/links', requireAdmin, async (req, res) => {
-  const { title, url, categoryId = null } = req.body ?? {}
+  const { title, url, categoryId = null, groupIds = [] } = req.body ?? {}
   if (!url || !title) return res.status(400).json({ error: 'title y url son obligatorios' })
-  res.status(201).json(await addLink({ title, url, categoryId }))
+  res.status(201).json(await addLink({ title, url, categoryId, groupIds }))
 })
 
 api.put('/links/:id', requireAdmin, async (req, res) => {

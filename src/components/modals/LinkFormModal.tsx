@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Trash } from 'reicon-react'
 import { Modal } from '../ui/Modal'
+import { Select } from '../ui/Select'
 import { useStore } from '../../store/useStore'
 import { useUI } from '../../store/useUI'
+import { useGroups } from '../../store/useGroups'
+import { useAuth } from '../../store/useAuth'
 import { deriveTitle, faviconUrl, getDomain, initials, normalizeUrl } from '../../lib/url'
 import { colorOf, tintOf } from '../../lib/colors'
 
@@ -34,11 +37,21 @@ export function LinkFormModal() {
     ? collection.find((l) => l.id === linkModal.editId) ?? null
     : null
 
+  const groups = useGroups((s) => s.groups)
+  const groupsLoaded = useGroups((s) => s.loaded)
+  const loadGroups = useGroups((s) => s.load)
+  const isAdmin = useAuth((s) => s.user?.role === 'admin')
+
   const [url, setUrl] = useState('')
   const [title, setTitle] = useState('')
   const [categoryId, setCategoryId] = useState<string | null>(null)
   const [touchedTitle, setTouchedTitle] = useState(false)
   const [imgFailed, setImgFailed] = useState(false)
+  const [groupIds, setGroupIds] = useState<string[]>([])
+
+  useEffect(() => {
+    if (linkModal.open && isWorkspace && isAdmin && !groupsLoaded) void loadGroups()
+  }, [linkModal.open, isWorkspace, isAdmin, groupsLoaded, loadGroups])
 
   useEffect(() => {
     if (!linkModal.open) return
@@ -48,11 +61,13 @@ export function LinkFormModal() {
       setTitle(editing.title)
       setCategoryId(editing.categoryId)
       setTouchedTitle(true)
+      setGroupIds(editing.groupIds ?? [])
     } else {
       setUrl(linkModal.prefillUrl)
       setTitle(linkModal.prefillUrl ? deriveTitle(linkModal.prefillUrl) : '')
       setCategoryId(activeCategoryId)
       setTouchedTitle(false)
+      setGroupIds([])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [linkModal.open, linkModal.editId, linkModal.prefillUrl])
@@ -72,6 +87,7 @@ export function LinkFormModal() {
       title: title.trim() || deriveTitle(url),
       url: normalizeUrl(url),
       categoryId,
+      ...(isWorkspace ? { groupIds } : {}),
     }
     if (editing) update(editing.id, payload)
     else add(payload)
@@ -145,19 +161,49 @@ export function LinkFormModal() {
 
         <label className="block">
           <span className="mb-1.5 block text-xs font-medium text-slate-400">Categoría</span>
-          <select
+          <Select
             value={categoryId ?? ''}
-            onChange={(e) => setCategoryId(e.target.value || null)}
-            className={`${field} appearance-none`}
-          >
-            <option value="">Sin categoría</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setCategoryId(v || null)}
+            placeholder="Sin categoría"
+            options={[
+              { value: '', label: 'Sin categoría' },
+              ...categories.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
         </label>
+
+        {isWorkspace && isAdmin && (
+          <div>
+            <span className="mb-1.5 block text-xs font-medium text-slate-400">Grupos</span>
+            <div className="flex flex-wrap gap-1.5">
+              {groups.length === 0 && (
+                <span className="text-xs text-slate-500">
+                  No hay grupos. Créalos en “Grupos y usuarios”.
+                </span>
+              )}
+              {groups.map((g) => {
+                const on = groupIds.includes(g.id)
+                return (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() =>
+                      setGroupIds((cur) => (on ? cur.filter((x) => x !== g.id) : [...cur, g.id]))
+                    }
+                    className={`rounded-full border px-2.5 py-1 text-xs transition ${
+                      on
+                        ? 'border-emerald-400/30 bg-emerald-400/15 text-emerald-200'
+                        : 'border-white/10 bg-white/[0.02] text-slate-400 hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    {g.name}
+                  </button>
+                )
+              })}
+            </div>
+            <p className="mt-1.5 text-xs text-slate-500">Sin grupos = visible para todos.</p>
+          </div>
+        )}
       </div>
 
       <div className="mt-5 flex items-center justify-between gap-3">
