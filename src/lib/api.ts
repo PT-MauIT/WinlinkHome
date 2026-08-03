@@ -2,6 +2,7 @@ import type {
   Background,
   Category,
   Group,
+  GroupLinks,
   LinkItem,
   NewsAudience,
   NewsItem,
@@ -40,7 +41,7 @@ async function req<T>(path: string, options?: RequestInit): Promise<T> {
   return (await res.json()) as T
 }
 
-type LinkInput = { title: string; url: string; categoryId: string | null }
+type LinkInput = { title: string; url: string; categoryId: string | null; groupIds?: string[] }
 type CategoryInput = { name: string; color: PaletteKey }
 type NewsInput = { title: string; body: string; audience: NewsAudience; groupId: string | null }
 
@@ -48,6 +49,7 @@ interface StatePayload {
   user: User
   categories: Category[]
   links: LinkItem[]
+  groupLinks: GroupLinks[]
   favorites: LinkItem[]
   background: Background
 }

@@ -20,6 +20,7 @@ export interface LinkItem {
   url: string
   categoryId: string | null
   createdAt: number
+  groupIds?: string[]
 }
 
 export type Role = 'admin' | 'member'
@@ -28,6 +29,11 @@ export interface Group {
   id: string
   name: string
   slug: string
+}
+
+export interface GroupLinks {
+  group: Group
+  links: LinkItem[]
 }
 
 export interface User {
