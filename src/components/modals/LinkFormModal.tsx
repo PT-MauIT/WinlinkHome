@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Trash } from 'reicon-react'
 import { Modal } from '../ui/Modal'
+import { Select } from '../ui/Select'
 import { useStore } from '../../store/useStore'
 import { useUI } from '../../store/useUI'
 import { deriveTitle, faviconUrl, getDomain, initials, normalizeUrl } from '../../lib/url'
@@ -145,18 +146,15 @@ export function LinkFormModal() {
 
         <label className="block">
           <span className="mb-1.5 block text-xs font-medium text-slate-400">Categoría</span>
-          <select
+          <Select
             value={categoryId ?? ''}
-            onChange={(e) => setCategoryId(e.target.value || null)}
-            className={`${field} appearance-none`}
-          >
-            <option value="">Sin categoría</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setCategoryId(v || null)}
+            placeholder="Sin categoría"
+            options={[
+              { value: '', label: 'Sin categoría' },
+              ...categories.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
         </label>
       </div>
 
