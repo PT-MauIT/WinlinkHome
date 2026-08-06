@@ -42,12 +42,12 @@ export function Board() {
       </div>
 
       <LiquidRail />
-      <LinkFormModal />
       <CategoryFormModal />
       <NewsPanel />
       <NewsFormModal />
       <GroupsPanel />
       <WorkspaceLinksPanel />
+      <LinkFormModal />
       <SettingsFab />
     </>
   )
