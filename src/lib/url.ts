@@ -30,9 +30,16 @@ export function deriveTitle(url: string): string {
   return core.charAt(0).toUpperCase() + core.slice(1)
 }
 
-/** Favicon via Google's public service — works client-side, no CORS issues. */
-export function faviconUrl(url: string, size = 64): string {
-  return `https://www.google.com/s2/favicons?domain=${getDomain(url)}&sz=${size}`
+/** Fuentes de favicon en orden: se prueba cada una hasta que cargue; si todas
+ *  fallan, el consumidor cae a iniciales.
+ *  1) DuckDuckGo — iconos limpios, devuelve 404 real cuando no existe (dispara fallback).
+ *  2) Google s2 en alta resolución — nítido a tamaños chicos, último recurso con imagen. */
+export function faviconSources(url: string): string[] {
+  const domain = getDomain(url)
+  return [
+    `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+    `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+  ]
 }
 
 /** Fallback badge text when the favicon fails to load. */

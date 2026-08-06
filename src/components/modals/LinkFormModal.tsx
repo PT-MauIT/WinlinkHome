@@ -6,7 +6,7 @@ import { useStore } from '../../store/useStore'
 import { useUI } from '../../store/useUI'
 import { useGroups } from '../../store/useGroups'
 import { useAuth } from '../../store/useAuth'
-import { deriveTitle, faviconUrl, getDomain, initials, normalizeUrl } from '../../lib/url'
+import { deriveTitle, faviconSources, getDomain, initials, normalizeUrl } from '../../lib/url'
 import { colorOf, tintOf } from '../../lib/colors'
 
 const field =
@@ -113,7 +113,7 @@ export function LinkFormModal() {
         >
           {url.trim() && !imgFailed ? (
             <img
-              src={faviconUrl(url)}
+              src={faviconSources(url)[0]}
               alt=""
               className="h-6 w-6"
               onError={() => setImgFailed(true)}

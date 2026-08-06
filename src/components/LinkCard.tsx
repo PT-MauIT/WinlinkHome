@@ -1,11 +1,11 @@
-import { useState } from 'react'
 import { ArrowRightUp, Pen, Trash } from 'reicon-react'
 import type { Category, LinkItem } from '../types'
 import { useStore } from '../store/useStore'
 import { useUI, type LinkKind } from '../store/useUI'
 import { useAuth } from '../store/useAuth'
 import { colorOf, tintOf } from '../lib/colors'
-import { faviconUrl, getDomain, initials } from '../lib/url'
+import { getDomain } from '../lib/url'
+import { Favicon } from './ui/Favicon'
 
 interface LinkCardProps {
   link: LinkItem
@@ -18,7 +18,6 @@ export function LinkCard({ link, category, kind }: LinkCardProps) {
   const removeLink = useStore((s) => s.removeLink)
   const removeFavorite = useStore((s) => s.removeFavorite)
   const isAdmin = useAuth((s) => s.user?.role === 'admin')
-  const [imgFailed, setImgFailed] = useState(false)
 
   // Favorites are owned by the user (always manageable); workspace links are admin-only.
   const canManage = kind === 'favorite' || isAdmin
@@ -45,18 +44,7 @@ export function LinkCard({ link, category, kind }: LinkCardProps) {
         className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg text-sm font-semibold"
         style={{ backgroundColor: tintOf(category?.color, 0.18), color: accent }}
       >
-        {imgFailed ? (
-          initials(link.title)
-        ) : (
-          <img
-            src={faviconUrl(link.url)}
-            alt=""
-            width={24}
-            height={24}
-            className="h-6 w-6"
-            onError={() => setImgFailed(true)}
-          />
-        )}
+        <Favicon url={link.url} title={link.title} imgClassName="h-6 w-6" />
       </div>
 
       {/* text */}
