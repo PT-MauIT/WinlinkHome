@@ -49,7 +49,7 @@ export function LinkGrid() {
           items={filterList(links)}
           kind="workspace"
           categoryById={categoryById}
-          canAdd={isAdmin}
+          canAdd={false}
           onAdd={() => openAddLink('workspace')}
           emptyLabel={
             isAdmin

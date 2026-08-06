@@ -2,7 +2,6 @@ import { ArrowRightUp, Pen, Trash } from 'reicon-react'
 import type { Category, LinkItem } from '../types'
 import { useStore } from '../store/useStore'
 import { useUI, type LinkKind } from '../store/useUI'
-import { useAuth } from '../store/useAuth'
 import { colorOf, tintOf } from '../lib/colors'
 import { getDomain } from '../lib/url'
 import { Favicon } from './ui/Favicon'
@@ -17,10 +16,10 @@ export function LinkCard({ link, category, kind }: LinkCardProps) {
   const openEditLink = useUI((s) => s.openEditLink)
   const removeLink = useStore((s) => s.removeLink)
   const removeFavorite = useStore((s) => s.removeFavorite)
-  const isAdmin = useAuth((s) => s.user?.role === 'admin')
 
-  // Favorites are owned by the user (always manageable); workspace links are admin-only.
-  const canManage = kind === 'favorite' || isAdmin
+  // Favorites are owned by the user (always manageable); workspace links are read-only here
+  // (workspace CRUD now lives in the admin panel).
+  const canManage = kind === 'favorite'
   const remove = kind === 'favorite' ? removeFavorite : removeLink
 
   const accent = colorOf(category?.color)
