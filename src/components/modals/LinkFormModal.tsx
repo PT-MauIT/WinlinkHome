@@ -67,7 +67,7 @@ export function LinkFormModal() {
       setTitle(linkModal.prefillUrl ? deriveTitle(linkModal.prefillUrl) : '')
       setCategoryId(activeCategoryId)
       setTouchedTitle(false)
-      setGroupIds([])
+      setGroupIds(linkModal.presetGroupIds ?? [])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [linkModal.open, linkModal.editId, linkModal.prefillUrl])
