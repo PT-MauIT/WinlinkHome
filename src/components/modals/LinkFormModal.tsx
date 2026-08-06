@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Trash } from 'reicon-react'
 import { Modal } from '../ui/Modal'
 import { Select } from '../ui/Select'
@@ -6,8 +6,9 @@ import { useStore } from '../../store/useStore'
 import { useUI } from '../../store/useUI'
 import { useGroups } from '../../store/useGroups'
 import { useAuth } from '../../store/useAuth'
-import { deriveTitle, faviconUrl, getDomain, initials, normalizeUrl } from '../../lib/url'
+import { deriveTitle, faviconSources, getDomain, initials, normalizeUrl } from '../../lib/url'
 import { colorOf, tintOf } from '../../lib/colors'
+import type { LinkItem } from '../../types'
 
 const field =
   'w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-white/25'
@@ -18,6 +19,7 @@ export function LinkFormModal() {
 
   const categories = useStore((s) => s.categories)
   const links = useStore((s) => s.links)
+  const groupLinks = useStore((s) => s.groupLinks)
   const favorites = useStore((s) => s.favorites)
   const activeCategoryId = useStore((s) => s.activeCategoryId)
   const addLink = useStore((s) => s.addLink)
@@ -28,7 +30,13 @@ export function LinkFormModal() {
   const removeFavorite = useStore((s) => s.removeFavorite)
 
   const isWorkspace = linkModal.kind === 'workspace'
-  const collection = isWorkspace ? links : favorites
+  const workspacePool = useMemo(() => {
+    const byId = new Map<string, LinkItem>()
+    for (const l of links) byId.set(l.id, l)
+    for (const gl of groupLinks) for (const l of gl.links) byId.set(l.id, l)
+    return [...byId.values()]
+  }, [links, groupLinks])
+  const collection = isWorkspace ? workspacePool : favorites
   const add = isWorkspace ? addLink : addFavorite
   const update = isWorkspace ? updateLink : updateFavorite
   const remove = isWorkspace ? removeLink : removeFavorite
@@ -67,7 +75,7 @@ export function LinkFormModal() {
       setTitle(linkModal.prefillUrl ? deriveTitle(linkModal.prefillUrl) : '')
       setCategoryId(activeCategoryId)
       setTouchedTitle(false)
-      setGroupIds([])
+      setGroupIds(linkModal.presetGroupIds ?? [])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [linkModal.open, linkModal.editId, linkModal.prefillUrl])
@@ -113,7 +121,7 @@ export function LinkFormModal() {
         >
           {url.trim() && !imgFailed ? (
             <img
-              src={faviconUrl(url)}
+              src={faviconSources(url)[0]}
               alt=""
               className="h-6 w-6"
               onError={() => setImgFailed(true)}

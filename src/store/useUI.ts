@@ -7,6 +7,7 @@ interface LinkModalState {
   editId: string | null
   prefillUrl: string
   kind: LinkKind
+  presetGroupIds: string[]
 }
 
 interface UIStore {
@@ -15,8 +16,9 @@ interface UIStore {
   newsFormOpen: boolean
   newsPanelOpen: boolean
   groupsPanelOpen: boolean
+  workspaceLinksOpen: boolean
 
-  openAddLink: (kind: LinkKind, prefillUrl?: string) => void
+  openAddLink: (kind: LinkKind, prefillUrl?: string, presetGroupIds?: string[]) => void
   openEditLink: (kind: LinkKind, id: string) => void
   closeLinkModal: () => void
 
@@ -30,21 +32,25 @@ interface UIStore {
 
   openGroupsPanel: () => void
   closeGroupsPanel: () => void
+
+  openWorkspaceLinks: () => void
+  closeWorkspaceLinks: () => void
 }
 
 export const useUI = create<UIStore>((set) => ({
-  linkModal: { open: false, editId: null, prefillUrl: '', kind: 'favorite' },
+  linkModal: { open: false, editId: null, prefillUrl: '', kind: 'favorite', presetGroupIds: [] },
   categoryModalOpen: false,
   newsFormOpen: false,
   newsPanelOpen: false,
   groupsPanelOpen: false,
+  workspaceLinksOpen: false,
 
-  openAddLink: (kind, prefillUrl = '') =>
-    set({ linkModal: { open: true, editId: null, prefillUrl, kind } }),
+  openAddLink: (kind, prefillUrl = '', presetGroupIds = []) =>
+    set({ linkModal: { open: true, editId: null, prefillUrl, kind, presetGroupIds } }),
   openEditLink: (kind, id) =>
-    set({ linkModal: { open: true, editId: id, prefillUrl: '', kind } }),
+    set({ linkModal: { open: true, editId: id, prefillUrl: '', kind, presetGroupIds: [] } }),
   closeLinkModal: () =>
-    set({ linkModal: { open: false, editId: null, prefillUrl: '', kind: 'favorite' } }),
+    set({ linkModal: { open: false, editId: null, prefillUrl: '', kind: 'favorite', presetGroupIds: [] } }),
 
   openCategoryModal: () => set({ categoryModalOpen: true }),
   closeCategoryModal: () => set({ categoryModalOpen: false }),
@@ -56,4 +62,7 @@ export const useUI = create<UIStore>((set) => ({
 
   openGroupsPanel: () => set({ groupsPanelOpen: true }),
   closeGroupsPanel: () => set({ groupsPanelOpen: false }),
+
+  openWorkspaceLinks: () => set({ workspaceLinksOpen: true }),
+  closeWorkspaceLinks: () => set({ workspaceLinksOpen: false }),
 }))

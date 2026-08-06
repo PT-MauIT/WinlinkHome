@@ -13,6 +13,7 @@ import { LiquidRail } from './LiquidRail'
 import { NewsPanel } from './news/NewsPanel'
 import { NewsFormModal } from './news/NewsFormModal'
 import { GroupsPanel } from './admin/GroupsPanel'
+import { WorkspaceLinksPanel } from './admin/WorkspaceLinksPanel'
 
 export function Board() {
   const load = useStore((s) => s.load)
@@ -41,11 +42,12 @@ export function Board() {
       </div>
 
       <LiquidRail />
-      <LinkFormModal />
       <CategoryFormModal />
       <NewsPanel />
       <NewsFormModal />
       <GroupsPanel />
+      <WorkspaceLinksPanel />
+      <LinkFormModal />
       <SettingsFab />
     </>
   )
