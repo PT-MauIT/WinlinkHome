@@ -16,7 +16,6 @@ interface UIStore {
   newsFormOpen: boolean
   newsPanelOpen: boolean
   groupsPanelOpen: boolean
-  workspaceLinksOpen: boolean
 
   openAddLink: (kind: LinkKind, prefillUrl?: string, presetGroupIds?: string[]) => void
   openEditLink: (kind: LinkKind, id: string) => void
@@ -32,9 +31,6 @@ interface UIStore {
 
   openGroupsPanel: () => void
   closeGroupsPanel: () => void
-
-  openWorkspaceLinks: () => void
-  closeWorkspaceLinks: () => void
 }
 
 export const useUI = create<UIStore>((set) => ({
@@ -43,7 +39,6 @@ export const useUI = create<UIStore>((set) => ({
   newsFormOpen: false,
   newsPanelOpen: false,
   groupsPanelOpen: false,
-  workspaceLinksOpen: false,
 
   openAddLink: (kind, prefillUrl = '', presetGroupIds = []) =>
     set({ linkModal: { open: true, editId: null, prefillUrl, kind, presetGroupIds } }),
@@ -62,7 +57,4 @@ export const useUI = create<UIStore>((set) => ({
 
   openGroupsPanel: () => set({ groupsPanelOpen: true }),
   closeGroupsPanel: () => set({ groupsPanelOpen: false }),
-
-  openWorkspaceLinks: () => set({ workspaceLinksOpen: true }),
-  closeWorkspaceLinks: () => set({ workspaceLinksOpen: false }),
 }))

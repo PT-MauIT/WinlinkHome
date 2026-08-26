@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Gear, Image, ChevronDown, Users, Grid } from 'reicon-react'
+import { Gear, Image, ChevronDown, Users } from 'reicon-react'
 import { ImageSourcePanel } from './settings/ImageSourcePanel'
 import { useAuth } from '../store/useAuth'
 import { useUI } from '../store/useUI'
@@ -12,7 +12,6 @@ export function SettingsFab() {
   const ref = useRef<HTMLDivElement>(null)
   const isAdmin = useAuth((s) => s.user?.role === 'admin')
   const openGroupsPanel = useUI((s) => s.openGroupsPanel)
-  const openWorkspaceLinks = useUI((s) => s.openWorkspaceLinks)
 
   useEffect(() => {
     if (!open) return
@@ -70,17 +69,6 @@ export function SettingsFab() {
           >
             <Users size={16} className="text-slate-400" />
             <span className="flex-1 text-left">Grupos y usuarios</span>
-          </button>
-
-          <button
-            onClick={() => {
-              openWorkspaceLinks()
-              setOpen(false)
-            }}
-            className="mt-2 flex w-full items-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.02] px-3 py-2.5 text-sm text-slate-200 transition hover:bg-white/5"
-          >
-            <Grid size={16} className="text-slate-400" />
-            <span className="flex-1 text-left">Gestión de enlaces</span>
           </button>
         </div>
       )}
