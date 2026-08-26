@@ -1,11 +1,13 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Bookmark, Plus } from 'reicon-react'
 import type { Category, LinkItem } from '../types'
 import { useStore } from '../store/useStore'
 import { useUI, type LinkKind } from '../store/useUI'
 import { useAuth } from '../store/useAuth'
+import { useGroups } from '../store/useGroups'
 import { getDomain } from '../lib/url'
 import { LinkCard } from './LinkCard'
+import { DeptTabs } from './DeptTabs'
 
 export function LinkGrid() {
   const links = useStore((s) => s.links)
@@ -17,6 +19,10 @@ export function LinkGrid() {
   const view = useStore((s) => s.view)
   const openAddLink = useUI((s) => s.openAddLink)
   const isAdmin = useAuth((s) => s.user?.role === 'admin')
+  const activeDept = useStore((s) => s.activeDept)
+  const setActiveDept = useStore((s) => s.setActiveDept)
+  const groups = useGroups((s) => s.groups)
+  const loadGroups = useGroups((s) => s.load)
 
   const categoryById = useMemo(
     () => new Map(categories.map((c) => [c.id, c])),
@@ -40,6 +46,14 @@ export function LinkGrid() {
   const showWorkspace = view === 'all' || view === 'workspace'
   const showFavorites = view === 'all' || view === 'favorites'
 
+  useEffect(() => {
+    if (isAdmin) void loadGroups()
+  }, [isAdmin, loadGroups])
+
+  const effectiveDept = groups.some((g) => g.id === activeDept)
+    ? activeDept
+    : groups[0]?.id ?? null
+
   return (
     <div className="space-y-9">
       {showWorkspace && (
@@ -49,7 +63,7 @@ export function LinkGrid() {
           items={filterList(links)}
           kind="workspace"
           categoryById={categoryById}
-          canAdd={false}
+          canAdd={isAdmin}
           onAdd={() => openAddLink('workspace')}
           emptyLabel={
             isAdmin
@@ -59,11 +73,38 @@ export function LinkGrid() {
         />
       )}
 
+      {/* Admin: tags de departamento + sección del depto seleccionado */}
+      {showWorkspace && isAdmin && groups.length > 0 && (
+        <div className="space-y-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Enlaces por grupo
+          </p>
+          <DeptTabs groups={groups} activeId={effectiveDept} onSelect={setActiveDept} />
+          {effectiveDept && (
+            <Section
+              key={effectiveDept}
+              title={groups.find((g) => g.id === effectiveDept)?.name ?? ''}
+              subtitle="Herramientas del grupo"
+              items={filterList(
+                groupLinks.find((gl) => gl.group.id === effectiveDept)?.links ?? [],
+              )}
+              kind="workspace"
+              categoryById={categoryById}
+              canAdd
+              onAdd={() => openAddLink('workspace', '', effectiveDept ? [effectiveDept] : [])}
+              emptyLabel="Aún no hay enlaces en este departamento. Agrega el primero."
+            />
+          )}
+        </div>
+      )}
+
+      {/* Miembro: secciones apiladas de sus grupos (como hoy) */}
       {showWorkspace &&
+        !isAdmin &&
         groupLinks.some((gl) => filterList(gl.links).length > 0) && (
           <div className="space-y-9">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              {isAdmin ? 'Enlaces por grupo' : 'De mis grupos'}
+              De mis grupos
             </p>
             {groupLinks.map((gl) => {
               const items = filterList(gl.links)

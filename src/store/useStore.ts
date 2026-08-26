@@ -15,6 +15,7 @@ interface Store {
   groupLinks: GroupLinks[]
   favorites: LinkItem[] // per-user
   activeCategoryId: string | null
+  activeDept: string | null
   query: string
   view: BoardView
   loaded: boolean
@@ -22,6 +23,7 @@ interface Store {
 
   load: () => Promise<void>
   setActiveCategory: (id: string | null) => void
+  setActiveDept: (id: string | null) => void
   setQuery: (q: string) => void
   setView: (v: BoardView) => void
   setBackground: (data: Background) => Promise<void>
@@ -48,6 +50,7 @@ export const useStore = create<Store>((set, get) => ({
   groupLinks: [],
   favorites: [],
   activeCategoryId: null,
+  activeDept: null,
   query: '',
   view: 'all',
   loaded: false,
@@ -66,6 +69,7 @@ export const useStore = create<Store>((set, get) => ({
   },
 
   setActiveCategory: (id) => set({ activeCategoryId: id }),
+  setActiveDept: (id) => set({ activeDept: id }),
   setQuery: (q) => set({ query: q }),
   setView: (v) => set({ view: v }),
 
